@@ -19,7 +19,9 @@ class CreateOccupationModelsTable extends Migration
             $table->unsignedBigInteger('id_box');
             $table->unsignedBigInteger('id_categorie');
             $table->integer('id_personnel');
-            $table->integer('id_patient');
+            $table->boolean('cloturer')->default(0);
+            $table->string('info_patient')->nullable();
+            $table->integer('id_patient')->nullable();
             $table->enum('type_occupation', ['type1', 'type2']);
             $table->dateTime('date_entree');
             $table->dateTime('date_sortie');

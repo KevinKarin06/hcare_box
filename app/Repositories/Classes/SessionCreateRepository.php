@@ -7,6 +7,7 @@ use App\Repositories\Interfaces\ISessionCreateRepository;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class SessionCreateRepository extends SessionGetRepository implements ISessionCreateRepository
 {
@@ -139,7 +140,8 @@ class SessionCreateRepository extends SessionGetRepository implements ISessionCr
                 'id_box' => 'required|exists:box,code_unique',
                 'id_categorie' => 'required|exists:categorie_eqp_alt_occ,code_unique',
                 'id_personnel' => 'required',
-                'id_patient' => 'required',
+                'id_patient' => 'nullable',
+                'info_patient' => 'nullable',
                 'type_occupation' => 'required',
                 'date_entree' => 'required',
                 'date_sortie' => 'required',
@@ -153,30 +155,51 @@ class SessionCreateRepository extends SessionGetRepository implements ISessionCr
                     $box = $this->box->getByCode($params['id_box']);
                     $categorie = $this->categorie->getByCode($params['id_categorie']);
                     $personnel = $this->getPersonnel($params['uid'], $params['id_personnel']);
-                    $patient = $this->getPatient($params['uid'], $params['id_patient']);
-                    if ($box && $categorie && $personnel && $patient) {
+                    //$patient = $this->getPatient($params['uid'], $params['id_patient']);
+                    if ($box && $categorie && $personnel) {
                         $personnel = get_object_vars($personnel);
-                        $patient = get_object_vars($patient);
-                        $occupation = $this->occupation->create([
-                            'id_box' => $box['id'],
-                            'id_categorie' => $categorie['id'],
-                            'id_personnel' => $personnel['id'],
-                            'id_patient' => $patient['id'],
-                            'type_occupation' => $params['type_occupation'],
-                            'date_entree' => $params['date_entree'],
-                            'date_sortie' => $params['date_sortie'],
-                            'observation' => $params['observation'],
-                            'code_parent' => $params['code_parent']
-                        ]);
-                        if (!isset($occupation["error"])) {
-                            $resp["data"] = [
-                                "code" => $occupation["data"]["code_unique"],
-                                "created_at" => $occupation["data"]["created_at"]
-                            ];
-                            DB::commit();
+                        $model = $this->occupation->getModel();
+                        $occupations =
+                            $model->where('cloturer', 0)
+                            ->where('id_personnel', $personnel['id'])
+                            ->get();
+                        $filter = [];
+                        $date_entree_new = Carbon::parse($params['date_entree']);
+                        $date_sortie_new = Carbon::parse($params['date_sortie']);
+                        foreach ($occupations as $occupation) {
+                            $date_entree = Carbon::parse($occupation['date_entree']);
+                            $date_sortie = Carbon::parse($occupation['date_sortie']);
+                            if (
+                                $date_entree_new->lte($date_sortie) ||
+                                $date_sortie_new->lte($date_sortie)
+                            ) {
+                                array_push($filter, $occupation);
+                            }
+                        }
+                        if (count($filter) > 0) {
+                            $resp = Fonctions::setError($resp, 'Personel est deja une occupation a cette heure');
                         } else {
-                            DB::rollBack();
-                            $resp = $occupation;
+                            //$patient = get_object_vars($patient);
+                            $occupation = $this->occupation->create([
+                                'id_box' => $box['id'],
+                                'id_categorie' => $categorie['id'],
+                                'id_personnel' => $personnel['id'],
+                                'type_occupation' => $params['type_occupation'],
+                                'date_entree' => $params['date_entree'],
+                                'date_sortie' => $params['date_sortie'],
+                                'observation' => $params['observation'],
+                                'code_parent' => $params['code_parent']
+                            ]);
+                            if (!isset($occupation["error"])) {
+                                $resp["data"] = [
+                                    "code" => $occupation["data"]["code_unique"],
+                                    "created_at" => $occupation["data"]["created_at"]
+                                ];
+                                DB::commit();
+                            } else {
+                                DB::rollBack();
+                                $resp = $occupation;
+                            }
                         }
                     } else {
                         $resp = Fonctions::setError($resp, 'Object not found');

@@ -17,6 +17,8 @@ class OccupationModel extends Model
         'id_categorie',
         'id_personnel',
         'id_patient',
+        'info_patient',
+        'cloturer',
         'type_occupation',
         'date_entree',
         'date_sortie',

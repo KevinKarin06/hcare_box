@@ -1,6 +1,6 @@
 <?php
 namespace App\Repositories\Interfaces;
 
-interface ISessionRepository extends ISessionCreateRepository {
-    
+interface ISessionRepository extends ISessionDeleteRepository {
+
 }

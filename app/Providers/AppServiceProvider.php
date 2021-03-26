@@ -10,8 +10,10 @@ use App\Repositories\Classes\CategorieEqpAltOccRepository;
 use App\Repositories\Classes\EquipementBoxRepository;
 use App\Repositories\Classes\OccupationRepository;
 use App\Repositories\Classes\SessionCreateRepository;
+use App\Repositories\Classes\SessionDeleteRepository;
 use App\Repositories\Classes\SessionGetRepository;
 use App\Repositories\Classes\SessionRepository;
+use App\Repositories\Classes\SessionUpdateRepository;
 use App\Repositories\Interfaces\IAlerteEquipementRepository;
 use App\Repositories\Interfaces\IAppRepository;
 use App\Repositories\Interfaces\IBasicRepository;
@@ -20,8 +22,10 @@ use App\Repositories\Interfaces\ICategorieEqpAltOccRepository;
 use App\Repositories\Interfaces\iEquipementBoxRepository;
 use App\Repositories\Interfaces\IOccupationRepository;
 use App\Repositories\Interfaces\ISessionCreateRepository;
+use App\Repositories\Interfaces\ISessionDeleteRepository;
 use App\Repositories\Interfaces\ISessionGetRepository;
 use App\Repositories\Interfaces\ISessionRepository;
+use App\Repositories\Interfaces\ISessionUpdateRepository;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -38,6 +42,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ISessionRepository::class, SessionRepository::class);
         $this->app->singleton(ISessionCreateRepository::class, SessionCreateRepository::class);
         $this->app->singleton(ISessionGetRepository::class, SessionGetRepository::class);
+        $this->app->singleton(ISessionUpdateRepository::class, SessionUpdateRepository::class);
+        $this->app->singleton(ISessionDeleteRepository::class, SessionDeleteRepository::class);
 
         $this->app->singleton(IAlerteEquipementRepository::class, AlerteEquipementRepository::class);
         $this->app->singleton(IBoxRepository::class, BoxRepository::class);

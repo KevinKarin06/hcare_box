@@ -619,4 +619,66 @@ class SessionGetRepository implements ISessionGetRepository
         }
         return $resp;
     }
+    public function getBoxOccuper(array $params)
+    {
+        $resp = ['data' => null];
+        try {
+            $validated = Validator::make($params, [
+                'uid' => 'required'
+            ]);
+            if ($validated->fails()) $resp = Fonctions::setError($resp, $validated->errors());
+            else {
+                $user = $this->checkAuthUser($params['uid']);
+                if ($user) {
+                } else {
+                    $resp = Fonctions::setError($resp, 'Unauthrozed');
+                }
+            }
+        } catch (Exception $ex) {
+            $resp = Fonctions::setError($resp, $ex->getMessage());
+        }
+        return $resp;
+    }
+    public function getPatientByBox(array $params, string $code)
+    {
+        $resp = ['data' => null];
+        try {
+            $validated = Validator::make($params, [
+                'uid' => 'required'
+            ]);
+            if ($validated->fails()) $resp = Fonctions::setError($resp, $validated->errors());
+            else {
+                $user = $this->checkAuthUser($params['uid']);
+                if ($user) {
+                    $box = $this->box->getByCode($code);
+                    if ($box) {
+                        $occupations = $this->getOccupationByBox(['uid' => $params['uid']], $code);
+                        if (isset($occupations['data'])) {
+                            $occupations = collect($occupations['data']);
+                            $occupations = $occupations->whereNotNull('id_patient');
+                           if(count($occupations) > 0){
+                            $datas = ['data' => []];
+                            foreach ($occupations as $occupation) {
+                                $temp = $occupation['info_patient'];
+                                array_push($datas['data'], $temp);
+                            }
+                            $resp = $datas;
+                           }else{
+                               $resp = Fonctions::setError($resp,'No patients in that box');
+                           }
+                        } else {
+                            $resp = Fonctions::setError($resp, 'Object not found');
+                        }
+                    } else {
+                        $resp = Fonctions::setError($resp, 'Invalid Box Id');
+                    }
+                } else {
+                    $resp = Fonctions::setError($resp, 'Unauthrozed');
+                }
+            }
+        } catch (Exception $ex) {
+            $resp = Fonctions::setError($resp, $ex->getMessage());
+        }
+        return $resp;
+    }
 }

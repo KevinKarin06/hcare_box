@@ -5,9 +5,11 @@ namespace App\Repositories\Interfaces;
 interface ISessionGetRepository
 {
     public function getAllBoxes(array $params);
+    public function getBoxOccuper(array $params);
     public function getBox(array $params,string $code);
     public function getEquipementByBox(array $params,string $code);
     public function getOccupationByBox(array $params,string $code);
+    public function getPatientByBox(array $params,string $code);
     public function getCategorie(array $params, string $code);
     public function getEquipementByCategorie(array $params, string $code);
     public function getAlerteEquipementByCategorie(array $params, string $code);
