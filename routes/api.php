@@ -25,7 +25,7 @@ Route::prefix('session')->group(
             Route::get('{code}', [SessionController::class, 'getBox']);
             Route::put('{code}', [SessionController::class, 'updateBox']);
             Route::get('', [SessionController::class, 'getAllBoxes']);
-            Route::get('occuper', [SessionController::class, 'getBoxOccuper']);
+            Route::get('/occuper/get', [SessionController::class, 'test']);
             Route::get('{code}/equipements', [SessionController::class, 'getEquipementByBox']);
             Route::get('{code}/patients', [SessionController::class, 'getPatientByBox']);
             Route::get('{code}/occupations', [SessionController::class, 'getOccupationByBox']);

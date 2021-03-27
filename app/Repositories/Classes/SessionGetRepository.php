@@ -630,6 +630,36 @@ class SessionGetRepository implements ISessionGetRepository
             else {
                 $user = $this->checkAuthUser($params['uid']);
                 if ($user) {
+                    $boxes = $this->box->getAll();
+                    $param = ['uid' => $params['uid']];
+                    $filter = [];
+                    if (count($boxes) > 0) {
+                        $child = [];
+                        foreach ($boxes as $box) {
+                            $occupations = $this->getOccupationByBox($param, $box['code_unique']);
+                            if (isset($occupations['data'])) {
+                                $occupations = collect($occupations['data']);
+                                $occupations = $occupations->where('cloturer',0);
+                                if(count($occupations) > 0){
+                                    array_push($filter,$box);
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+                        if(count($filter) > 0){
+                            $datas = ['data' => []];
+                            foreach ($filter as $fil) {
+                                $temp = $this->formatDataWithoutId($fil);
+                                array_push($datas['data'], $temp);
+                            }
+                            $resp = $datas;
+                        }else{
+                            $resp = Fonctions::setError($resp,'No box Occuper');
+                        }
+                    } else {
+                        $resp = Fonctions::setError($resp, 'Nox box found');
+                    }
                 } else {
                     $resp = Fonctions::setError($resp, 'Unauthrozed');
                 }
@@ -652,20 +682,20 @@ class SessionGetRepository implements ISessionGetRepository
                 if ($user) {
                     $box = $this->box->getByCode($code);
                     if ($box) {
-                        $occupations = $this->getOccupationByBox(['uid' => $params['uid']], $code);
+                        $filter = $this->getOccupationByBox(['uid' => $params['uid']], $code);
                         if (isset($occupations['data'])) {
                             $occupations = collect($occupations['data']);
                             $occupations = $occupations->whereNotNull('id_patient');
-                           if(count($occupations) > 0){
-                            $datas = ['data' => []];
-                            foreach ($occupations as $occupation) {
-                                $temp = $occupation['info_patient'];
-                                array_push($datas['data'], $temp);
+                            if (count($occupations) > 0) {
+                                $datas = ['data' => []];
+                                foreach ($occupations as $occupation) {
+                                    $temp = $occupation['info_patient'];
+                                    array_push($datas['data'], $temp);
+                                }
+                                $resp = $datas;
+                            } else {
+                                $resp = Fonctions::setError($resp, 'No patients in that box');
                             }
-                            $resp = $datas;
-                           }else{
-                               $resp = Fonctions::setError($resp,'No patients in that box');
-                           }
                         } else {
                             $resp = Fonctions::setError($resp, 'Object not found');
                         }

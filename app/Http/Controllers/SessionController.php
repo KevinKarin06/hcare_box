@@ -131,4 +131,7 @@ class SessionController extends Controller
     public function getPatientByBox(Request $request, string $code){
         return $this->worker($this->repository->getPatientByBox($request->all(), $code), 200);
     }
+    public function test(Request $request){
+        return $this->worker($this->repository->getBoxOccuper($request->all()), 200);
+    }
 }
